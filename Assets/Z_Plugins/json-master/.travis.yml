@@ -1,0 +1,7 @@
+language: csharp
+sudo: false
+mono: none
+dotnet: 2.0.3
+dist: trusty
+script:
+  - dotnet test test/jsontest.csproj 

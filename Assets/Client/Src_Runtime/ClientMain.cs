@@ -1,19 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Telepathy;
 
-public class ClientMain : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        Debug.Log("ClientMain Start");
-        // Initialize the client
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
+namespace GameClient {
 
+    // 客户端主类
+    public class ClientMain : MonoBehaviour {
+        Client client;
+
+        bool isTearDown;
+
+        void Start() {
+            Debug.Log("ClientMain Start");
+
+        }
+
+        void Update() {
+
+        }
     }
 }
