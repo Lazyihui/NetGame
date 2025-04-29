@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Telepathy;
+using System.Threading;
+using System;
 
 
 namespace GameClient {
@@ -45,10 +47,16 @@ namespace GameClient {
             }
             if (Input.GetKeyDown(KeyCode.Space)) {
                 // 发送消息
-                Debug.Log("发送消息");
-                string message = "Hello World! " + Time.time; // 消息内容
-                byte[] data = System.Text.Encoding.UTF8.GetBytes(message); // 转换为字节数组
-                client.Send(data); // 发送消息
+                // 1.
+                // Debug.Log("发送消息");
+                // string message = "Hello World! " + Time.time; // 消息内容
+                // byte[] data = System.Text.Encoding.UTF8.GetBytes(message); // 转换为字节数组
+                // client.Send(data); // 发送消息
+                // 2.
+                int a = Time.frameCount; // 帧数
+                byte[] date = BitConverter.GetBytes(a);
+                client.Send(date);
+                Debug.Log("发送消息: " + a); // 消息内容
             } 
         }
 
