@@ -1,0 +1,18 @@
+{
+    "name": "NetGame_Server",
+    "rootNamespace": "",
+    "references": [
+        "GUID:fcf86245aea3a5d4091e6873a44d00a8",
+        "GUID:fbc8a22a6933fb545887dd9ff8922699",
+        "GUID:bafd73f3ce5e9d44facde961dedb2034"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -4,6 +4,8 @@ using UnityEngine;
 using Telepathy;
 using System.Threading;
 using System;
+using NetGame_Protocoles; // 引入协议命名空间
+using TinyJson;
 
 
 namespace GameClient {
@@ -47,17 +49,25 @@ namespace GameClient {
             }
             if (Input.GetKeyDown(KeyCode.Space)) {
                 // 发送消息
-                // 1.
+                // 1.发送原始数据
                 // Debug.Log("发送消息");
                 // string message = "Hello World! " + Time.time; // 消息内容
                 // byte[] data = System.Text.Encoding.UTF8.GetBytes(message); // 转换为字节数组
                 // client.Send(data); // 发送消息
-                // 2.
-                int a = Time.frameCount; // 帧数
-                byte[] date = BitConverter.GetBytes(a);
-                client.Send(date);
-                Debug.Log("发送消息: " + a); // 消息内容
-            } 
+                // 2.发送二进制序列化数据
+                // int a = Time.frameCount; // 帧数
+                // byte[] date = BitConverter.GetBytes(a);
+                // client.Send(date);
+                // Debug.Log("发送消息: " + a); // 消息内容
+                // 3.发送复杂数据 
+                LoginMessage msg = new LoginMessage(); // 创建消息对象
+                msg.username = "cyh";
+                msg.password = "123";
+                string str = msg.ToJson(); // 转换为Json字符串
+                byte[] data = System.Text.Encoding.UTF8.GetBytes(str); // 转换为字节数组
+                client.Send(data); // 发送消息
+                Debug.Log("发送消息: " + str); // 消息内容
+            }
         }
 
         void OnApplicationQuit() {

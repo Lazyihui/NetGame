@@ -5,7 +5,9 @@ using Unity.VisualScripting;
 using UnityEngine;
 using Telepathy;
 using System.Threading;
-
+using NetGame_Protocoles; // 引入协议命名空间
+using TinyJson;
+using System.Text;
 // 服务器主类
 namespace GameServer {
 
@@ -34,9 +36,14 @@ namespace GameServer {
                 // string str = System.Text.Encoding.UTF8.GetString(message); // 转换为字符串
                 // Debug.Log(" from " + connectionId + "收到的信息 " + str);
                 // // server.Send(connectionId, message); // 回发消息
-                // 2.
-                int a = BitConverter.ToInt32(message); // 转换为整数
-                Debug.Log(" from " + connectionId + "收到的信息 " + a); // 消息内容
+                // // 2.
+                // int a = BitConverter.ToInt32(message); // 转换为整数
+                // Debug.Log(" from " + connectionId + "收到的信息 " + a); // 消息内容
+                // 3.
+                // 反序列化数据
+                string str = Encoding.UTF8.GetString(message); // 转换为字符串
+                LoginMessage msg = str.FromJson<LoginMessage>(); // 反序列化
+                Debug.Log(" from " + connectionId + "收到的信息 " + msg.ToString()); // 消息内容
             };
 
             server.OnDisconnected += (connectionId) => {
