@@ -14,13 +14,13 @@ namespace GameClient {
 
         void Start() {
 
-            int port = 7777; // 服务器端口 一般要高于1000
+            int port = 7777; // 服务器端口 一般要高于10000 1-65535
             int messageSize = 1024; // 消息大小
             string ip = "127.0.0.1"; // 服务器IP地址
 
             // 1. 创建客户端
             client = new Client(messageSize);
-            client.Connect(ip, port); // 连接服务器
+            client.Connect(ip, port); // 连接服务器 
 
             client.OnConnected += () => {
                 Debug.Log("链接成功");
@@ -43,7 +43,13 @@ namespace GameClient {
             if (client != null) {
                 client.Tick(10); // 处理网络消息10ms
             }
-
+            if (Input.GetKeyDown(KeyCode.Space)) {
+                // 发送消息
+                Debug.Log("发送消息");
+                string message = "Hello World! " + Time.time; // 消息内容
+                byte[] data = System.Text.Encoding.UTF8.GetBytes(message); // 转换为字节数组
+                client.Send(data); // 发送消息
+            } 
         }
 
         void OnApplicationQuit() {

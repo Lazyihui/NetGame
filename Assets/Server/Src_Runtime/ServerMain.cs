@@ -5,7 +5,6 @@ using UnityEngine;
 using Telepathy;
 
 // 服务器主类
-
 namespace GameServer {
 
     // 服务器主类
@@ -22,14 +21,16 @@ namespace GameServer {
             // 1. 创建服务器
             server = new Server(messageSize);
             server.Start(port); // 启动服务器
+            Debug.Log("服务器启动成功: " + port);
 
             server.OnConnected += (connectionId, str) => {
                 Debug.Log("链接成功: " + connectionId + " " + str);
             };
 
             server.OnData += (connectionId, message) => {
-                Debug.Log("收到消息: " + message.ToString() + " from " + connectionId);
-                server.Send(connectionId, message); // 回发消息
+                string str = System.Text.Encoding.UTF8.GetString(message); // 转换为字符串
+                Debug.Log(" from " + connectionId + "收到的信息 " + str);
+                // server.Send(connectionId, message); // 回发消息
             };
 
             server.OnDisconnected += (connectionId) => {
@@ -58,6 +59,7 @@ namespace GameServer {
             isTearDown = true;
 
             if (server != null) {
+                // 因为是子线程必需关闭
                 server.Stop();
             }
         }
