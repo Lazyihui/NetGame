@@ -1,3 +1,17 @@
 {
-	"name": "NetGame_Potococles"
+    "name": "NetGame_Potococles",
+    "rootNamespace": "",
+    "references": [
+        "GUID:bafd73f3ce5e9d44facde961dedb2034",
+        "GUID:fcf86245aea3a5d4091e6873a44d00a8"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
