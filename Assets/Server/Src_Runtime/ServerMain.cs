@@ -17,6 +17,9 @@ namespace GameServer {
         Server server; // 服务器对象
         bool isTearDown; // 是否已经关闭
 
+        // 存下来
+        List<int/*connID*/> client = new List<int>(); // 客户端连接ID列表
+
         void Start() {
             int port = 7777; // 服务器端口 一般要高于1000
             int messageSize = 1024; // 消息大小
@@ -29,6 +32,7 @@ namespace GameServer {
 
             server.OnConnected += (connectionId, str) => {
                 Debug.Log("链接成功: " + connectionId + " " + str);
+                client.Add(connectionId); // 添加连接ID到列表
             };
 
             server.OnData += (connectionId, message) => {
@@ -41,13 +45,21 @@ namespace GameServer {
                 // Debug.Log(" from " + connectionId + "收到的信息 " + a); // 消息内容
                 // 3.
                 // 反序列化数据
-                string str = Encoding.UTF8.GetString(message); // 转换为字符串
-                LoginMessage msg = str.FromJson<LoginMessage>(); // 反序列化
-                Debug.Log(" from " + connectionId + "收到的信息 " + msg.ToString()); // 消息内容
+                // string str = Encoding.UTF8.GetString(message); // 转换为字符串
+                // LoginMessage msg = str.FromJson<LoginMessage>(); // 反序列化
+                // Debug.Log(" from " + connectionId + "收到的信息 " + msg.ToString()); // 消息内容
+                // 4.要先处理id在处理数据
+                int typeID = MessageHeper.ReadHeader(message.Array); // 读取消息头 这里后面应该是有错的
+                if (typeID == 1) {
+                    // LoginMessage
+                } else if (typeID == 2) {
+                    // ChatMessage
+                }
             };
 
             server.OnDisconnected += (connectionId) => {
                 Debug.Log("链接断开: " + connectionId);
+                client.Remove(connectionId); // 移除连接ID
             };
 
             Application.runInBackground = true; // 允许后台运行
@@ -56,6 +68,21 @@ namespace GameServer {
         void Update() {
             if (server != null) {
                 server.Tick(10); // 处理网络消息10ms
+            }
+
+            if (Input.GetKeyUp(KeyCode.Space)) {
+                // 广播
+                for (int i = 0; i < client.Count; i++) {
+                    int connID = client[i]; // 获取连接ID
+
+                    // 发送消息
+                    // 1.发送原始数据
+                    RoleSpawnMessage msg = new RoleSpawnMessage(); // 创建消息对象
+                    msg.position = new float[2] { 1, 2 }; // 设置位置
+                    byte[] data = MessageHeper.ToData(2, msg); // 消息头+消息体
+                    server.Send(connID, data); // 发送消息
+
+                }
             }
         }
 

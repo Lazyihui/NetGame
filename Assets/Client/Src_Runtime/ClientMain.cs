@@ -63,20 +63,26 @@ namespace GameClient {
                 LoginMessage msg = new LoginMessage(); // 创建消息对象
                 msg.username = "cyh";
                 msg.password = "123";
-                string str = msg.ToJson(); // 转换为Json字符串
-                byte[] data = System.Text.Encoding.UTF8.GetBytes(str); // 转换为字节数组
+                // string str = msg.ToJson(); // 转换为Json字符串
+                // byte[] data = System.Text.Encoding.UTF8.GetBytes(str); // 转换为字节数组
+                // client.Send(data); // 发送消息
+                // Debug.Log("发送消息: " + str); // 消息内容
+                // 4.天际MessageHeper类发送消息
+                byte[] data = MessageHeper.ToData(1, msg); // 消息头+消息体
                 client.Send(data); // 发送消息
-                Debug.Log("发送消息: " + str); // 消息内容
             }
 
             if (Input.GetKeyUp(KeyCode.A)) {
                 // 发送角色出生消息
                 RoleSpawnMessage msg = new RoleSpawnMessage(); // 创建消息对象
                 msg.position = new float[2] { 1, 2 }; // 设置位置
-                string str = msg.ToJson(); // 转换为Json字符串
-                byte[] data = System.Text.Encoding.UTF8.GetBytes(str); // 转换为字节数组
+                // string str = msg.ToJson(); // 转换为Json字符串
+                // byte[] data = System.Text.Encoding.UTF8.GetBytes(str); // 转换为字节数组
+                // client.Send(data); // 发送消息
+                // Debug.Log("发送角色出生消息: " + str); // 消息内容
+                byte[] data = MessageHeper.ToData(2, msg); // 消息头+消息体
                 client.Send(data); // 发送消息
-                Debug.Log("发送角色出生消息: " + str); // 消息内容
+                Debug.Log("发送角色出生消息: " + msg.ToJson()); // 消息内容
             }
         }
 
