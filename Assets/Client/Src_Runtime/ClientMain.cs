@@ -34,15 +34,19 @@ namespace GameClient {
             client.OnData += (message) => {
                 Debug.Log("收到消息: " + message.ToString());
                 int typeID = MessageHeper.ReadHeader(message.Array); // 读取消息头 这里后面应该是有错的
-                if(typeID == MessageConst.login_res) {
+                if (typeID == MessageConst.login_res) {
                     // 登录响应消息
                     // LoginResMessage msg = MessageHeper.ReadData<LoginResMessage>(message.Array); // 反序列化
                     // Debug.Log("收到登录响应消息: " + msg.ToString()); // 消息内容
+                } else if (typeID == MessageConst.login_req) {
+
                 } else if (typeID == MessageConst.roleSpawn_bro) {
                     // 角色出生广播消息
                     RoleSpawnBroMessage msg = MessageHeper.ReadData<RoleSpawnBroMessage>(message.Array); // 反序列化
-                    OnSpawn(msg.username, msg.position); // 处理消息
-                } 
+                    OnSpawn(msg); // 处理消息
+                } else if (typeID == MessageConst.roleSpawn_res) {
+
+                }
             };
 
             client.OnDisconnected += () => {
@@ -101,6 +105,7 @@ namespace GameClient {
                 msg.position = new float[2] { 1, 2 }; // 设置位置
                 byte[] data = MessageHeper.ToData(msg); // 消息头+消息体
                 client.Send(data); // 发送消息
+                Debug.Log("发送角色出生消息: " + msg.ToJson()); // 消息内容
             }
         }
 
@@ -118,9 +123,9 @@ namespace GameClient {
         }
 
         // === Game Login ===
-        void OnSpawn(string username, float[] position) {
+        void OnSpawn(RoleSpawnBroMessage meg) {
             // 角色出生
-            Debug.Log("角色出生: " + username + " " + position[0] + " " + position[1]);
+            Debug.Log("角色出生: " + meg.username + " " + meg.position[0] + " " + meg.position[1]);
         }
 
         void MoveTo(string username, float[] position) {
