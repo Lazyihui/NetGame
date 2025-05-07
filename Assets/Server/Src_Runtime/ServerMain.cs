@@ -35,7 +35,9 @@ namespace GameServer {
                 client.Add(connectionId); // 添加连接ID到列表
             };
 
-            server.OnData += (connectionId, message) => {
+            server.OnData += (connId, message) => {
+                Debug.Log("[server]Data " + connId + " " + message.Count);
+
                 // 1.
                 // string str = System.Text.Encoding.UTF8.GetString(message); // 转换为字符串
                 // Debug.Log(" from " + connectionId + "收到的信息 " + str);
@@ -49,15 +51,16 @@ namespace GameServer {
                 // LoginMessage msg = str.FromJson<LoginMessage>(); // 反序列化
                 // Debug.Log(" from " + connectionId + "收到的信息 " + msg.ToString()); // 消息内容
                 // 4.要先处理id在处理数据
+                // 注意：这里的message是一个对象池 不能直接使用
                 int typeID = MessageHeper.ReadHeader(message.Array); // 读取消息头 这里后面应该是有错的
                 if (typeID == MessageConst.login_req) {
                     // LoginMessage
                     LoginReqMessage msg = MessageHeper.ReadData<LoginReqMessage>(message.Array); // 反序列化
-                    Debug.Log(" from " + connectionId + "收到的信息 " + msg.ToString()); // 消息内容
+                    Debug.Log(" from " + connId + "收到的信息 " + message); // 消息内容
                 } else if (typeID == MessageConst.roleSpawn_req) {
                     // ChatMessage
                     RoleSpawnReqMessage msg = MessageHeper.ReadData<RoleSpawnReqMessage>(message.Array); // 反序列化
-                    OnSpawnRole(connectionId, msg); // 处理消息
+                    OnSpawnRole(connId, msg); // 处理消息
                 }
             };
 
@@ -78,14 +81,12 @@ namespace GameServer {
                 // 广播
                 for (int i = 0; i < client.Count; i++) {
                     int connID = client[i]; // 获取连接ID
-
                     // 发送消息
                     // 1.发送原始数据
                     RoleSpawnReqMessage msg = new RoleSpawnReqMessage(); // 创建消息对象
                     msg.position = new float[2] { 1, 2 }; // 设置位置
                     byte[] data = MessageHeper.ToData(msg); // 消息头+消息体
                     server.Send(connID, data); // 发送消息
-
                 }
             }
         }

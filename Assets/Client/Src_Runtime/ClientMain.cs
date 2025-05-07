@@ -13,6 +13,8 @@ namespace GameClient {
     // 客户端主类
     public class ClientMain : MonoBehaviour {
         [SerializeField] public string username;
+
+        Dictionary<string, RoleEntity> players = new Dictionary<string, RoleEntity>(); // 角色列表
         Client client;
 
         bool isTearDown;
@@ -63,6 +65,7 @@ namespace GameClient {
                 client.Tick(10); // 处理网络消息10ms
             }
             if (Input.GetKeyUp(KeyCode.Space)) {
+                Debug.Log("发送消息: " + Time.time); // 消息内容
                 // 发送消息
                 // 1.发送原始数据
                 // Debug.Log("发送消息");
@@ -89,6 +92,8 @@ namespace GameClient {
             }
 
             if (Input.GetKeyUp(KeyCode.R)) {
+                Debug.Log("发送消息: " + Time.time); // 消息内容
+
                 // 发送角色出生消息
                 // RoleSpawnReqMessage msg = new RoleSpawnReqMessage(); // 创建消息对象
                 // msg.position = new float[2] { 1, 2 }; // 设置位置
@@ -126,6 +131,11 @@ namespace GameClient {
         void OnSpawn(RoleSpawnBroMessage meg) {
             // 角色出生
             Debug.Log("角色出生: " + meg.username + " " + meg.position[0] + " " + meg.position[1]);
+            // 生成的时候添加到角色列表
+            RoleEntity role = GameObject.CreatePrimitive(PrimitiveType.Sphere).AddComponent<RoleEntity>(); // 创建角色对象
+            role.username = meg.username; // 设置角色名称
+            role.transform.position = new Vector3(meg.position[0], 0, meg.position[1]); // 设置角色位置
+            players.TryAdd(role.username, role); // 添加到角色列表
         }
 
         void MoveTo(string username, float[] position) {
