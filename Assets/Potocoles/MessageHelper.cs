@@ -5,7 +5,7 @@ using TinyJson;
 using UnityEngine;
 namespace NetGame_Protocoles {
 
-    public static class MessageHeper {
+    public static class MessageHelper {
 
         // 用来识别发的是什么类型的信息
         static Dictionary<Type, int> typeIDMap = new Dictionary<Type, int>() {
@@ -14,6 +14,9 @@ namespace NetGame_Protocoles {
             {typeof(RoleSpawnReqMessage), MessageConst.roleSpawn_req}, // 角色出生请求消息
             // {typeof(RoleSpawnResMessage), MessageConst.roleSpawn_res}, // 角色出生响应消息
             {typeof(RoleSpawnBroMessage), MessageConst.roleSpawn_bro}, // 角色出生广播消息
+            {typeof(MoveReqMessage), MessageConst.move_req}, // 角色移动请求消息
+            // {typeof(MoveResMessage), MessageConst.move_res}, // 角色移动响应消息
+            {typeof(MoveBroMessage), MessageConst.move_bro}, // 角色移动广播消息
         };
 
         public static int GetTypeID<T>() {

@@ -18,7 +18,7 @@ namespace GameServer {
         bool isTearDown; // 是否已经关闭
 
         // 存下来
-        List<int/*connID*/> client = new List<int>(); // 客户端连接ID列表
+        List<int/*connID*/> clients = new List<int>(); // 客户端连接ID列表
 
         void Start() {
             int port = 7777; // 服务器端口 一般要高于1000
@@ -32,7 +32,7 @@ namespace GameServer {
 
             server.OnConnected += (connectionId, str) => {
                 Debug.Log("链接成功: " + connectionId + " " + str);
-                client.Add(connectionId); // 添加连接ID到列表
+                clients.Add(connectionId); // 添加连接ID到列表
             };
 
             server.OnData += (connId, message) => {
@@ -52,21 +52,27 @@ namespace GameServer {
                 // Debug.Log(" from " + connectionId + "收到的信息 " + msg.ToString()); // 消息内容
                 // 4.要先处理id在处理数据
                 // 注意：这里的message是一个对象池 不能直接使用
-                int typeID = MessageHeper.ReadHeader(message.Array); // 读取消息头 这里后面应该是有错的
+                int typeID = MessageHelper.ReadHeader(message.Array); // 读取消息头 这里后面应该是有错的
                 if (typeID == MessageConst.login_req) {
                     // LoginMessage
-                    LoginReqMessage msg = MessageHeper.ReadData<LoginReqMessage>(message.Array); // 反序列化
+                    LoginReqMessage msg = MessageHelper.ReadData<LoginReqMessage>(message.Array); // 反序列化
                     Debug.Log(" from " + connId + "收到的信息 " + message); // 消息内容
                 } else if (typeID == MessageConst.roleSpawn_req) {
                     // ChatMessage
-                    RoleSpawnReqMessage msg = MessageHeper.ReadData<RoleSpawnReqMessage>(message.Array); // 反序列化
+                    RoleSpawnReqMessage msg = MessageHelper.ReadData<RoleSpawnReqMessage>(message.Array); // 反序列化
                     OnSpawnRole(connId, msg); // 处理消息
+                } else if (typeID == MessageConst.move_req) {
+                    // ChatMessage
+                    MoveReqMessage msg = MessageHelper.ReadData<MoveReqMessage>(message.Array); // 反序列化
+                    OnMove(connId, msg); // 处理消息
+                } else {
+                    Debug.Log("没有该类型的消息"); // 没有该类型的消息
                 }
             };
 
             server.OnDisconnected += (connectionId) => {
                 Debug.Log("链接断开: " + connectionId);
-                client.Remove(connectionId); // 移除连接ID
+                clients.Remove(connectionId); // 移除连接ID
             };
 
             Application.runInBackground = true; // 允许后台运行
@@ -79,13 +85,13 @@ namespace GameServer {
 
             if (Input.GetKeyUp(KeyCode.Space)) {
                 // 广播
-                for (int i = 0; i < client.Count; i++) {
-                    int connID = client[i]; // 获取连接ID
+                for (int i = 0; i < clients.Count; i++) {
+                    int connID = clients[i]; // 获取连接ID
                     // 发送消息
                     // 1.发送原始数据
                     RoleSpawnReqMessage msg = new RoleSpawnReqMessage(); // 创建消息对象
                     msg.position = new float[2] { 1, 2 }; // 设置位置
-                    byte[] data = MessageHeper.ToData(msg); // 消息头+消息体
+                    byte[] data = MessageHelper.ToData(msg); // 消息头+消息体
                     server.Send(connID, data); // 发送消息
                 }
             }
@@ -116,8 +122,8 @@ namespace GameServer {
             // 2.回传给本人
 
             // 3.给所有人广播
-            for (int i = 0; i < client.Count; i++) {
-                int id = client[i];
+            for (int i = 0; i < clients.Count; i++) {
+                int id = clients[i];
                 // 获取连接ID
                 // if (id == connID) {
                 //     // 给本人回传
@@ -130,9 +136,27 @@ namespace GameServer {
                 RoleSpawnBroMessage bro = new RoleSpawnBroMessage(); // 创建消息对象
                 bro.username = req.username; // 设置用户名
                 bro.position = req.position; // 设置位置
-                
-                byte[] data = MessageHeper.ToData(bro); // 消息头+消息体
+
+                byte[] data = MessageHelper.ToData(bro); // 消息头+消息体
                 server.Send(id, data); // 发送消息
+            }
+        }
+
+            void OnMove(int connID, MoveReqMessage req) {
+            // 1. 当有一位客户端请求移动
+
+            // 2. 回传给本人
+
+            // 3. 广播给所有人
+            for (int i = 0; i < clients.Count; i++) {
+                int clientID = clients[i];
+                // 广播给其他人
+                MoveBroMessage bro = new MoveBroMessage();
+                bro.username = req.username;
+                bro.position = req.position;
+
+                byte[] data = MessageHelper.ToData(bro);
+                server.Send(clientID, data);
             }
         }
     }

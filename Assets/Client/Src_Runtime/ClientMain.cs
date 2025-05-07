@@ -35,19 +35,14 @@ namespace GameClient {
 
             client.OnData += (message) => {
                 Debug.Log("收到消息: " + message.ToString());
-                int typeID = MessageHeper.ReadHeader(message.Array); // 读取消息头 这里后面应该是有错的
-                if (typeID == MessageConst.login_res) {
-                    // 登录响应消息
-                    // LoginResMessage msg = MessageHeper.ReadData<LoginResMessage>(message.Array); // 反序列化
-                    // Debug.Log("收到登录响应消息: " + msg.ToString()); // 消息内容
-                } else if (typeID == MessageConst.login_req) {
-
-                } else if (typeID == MessageConst.roleSpawn_bro) {
+                int typeID = MessageHelper.ReadHeader(message.Array); // 读取消息头 这里后面应该是有错的
+                if (typeID == MessageConst.roleSpawn_bro) {
                     // 角色出生广播消息
-                    RoleSpawnBroMessage msg = MessageHeper.ReadData<RoleSpawnBroMessage>(message.Array); // 反序列化
+                    RoleSpawnBroMessage msg = MessageHelper.ReadData<RoleSpawnBroMessage>(message.Array); // 反序列化
                     OnSpawn(msg); // 处理消息
-                } else if (typeID == MessageConst.roleSpawn_res) {
-
+                } else if (typeID == MessageConst.move_bro) {
+                    var msg = MessageHelper.ReadData<MoveBroMessage>(message.Array); // 反序列化
+                    OnMove(msg); // 处理消息
                 }
             };
 
@@ -86,7 +81,7 @@ namespace GameClient {
                 // client.Send(data); // 发送消息
                 // Debug.Log("发送消息: " + str); // 消息内容
                 // 4.天际MessageHeper类发送消息
-                byte[] data = MessageHeper.ToData(msg); // 消息头+消息体
+                byte[] data = MessageHelper.ToData(msg); // 消息头+消息体
                 client.Send(data); // 发送消息
                 Debug.Log("发送消息: " + msg.ToJson()); // 消息内容
             }
@@ -108,10 +103,22 @@ namespace GameClient {
                 RoleSpawnReqMessage msg = new RoleSpawnReqMessage(); // 创建消息对象
                 msg.username = username; // 设置用户名
                 msg.position = new float[2] { 1, 2 }; // 设置位置
-                byte[] data = MessageHeper.ToData(msg); // 消息头+消息体
+                byte[] data = MessageHelper.ToData(msg); // 消息头+消息体
                 client.Send(data); // 发送消息
                 Debug.Log("发送角色出生消息: " + msg.ToJson()); // 消息内容
             }
+
+            // 写一个移动
+            Vector3 move = Input.GetAxis("Horizontal") * Vector2.right + Input.GetAxis("Vertical") * Vector2.up; // 获取移动方向
+            bool has = players.TryGetValue(username, out RoleEntity me); // 获取角色对象
+            if (has && move != Vector3.zero) {
+                Vector3 pos = me.transform.position + move * Time.deltaTime * 5.0f;
+                MoveReqMessage req = new MoveReqMessage();
+                req.username = username;
+                req.position = new float[2] { pos.x, pos.z };
+                MoveSend(req);
+            }
+
         }
 
         void OnApplicationQuit() {
@@ -138,9 +145,20 @@ namespace GameClient {
             players.TryAdd(role.username, role); // 添加到角色列表
         }
 
-        void MoveTo(string username, float[] position) {
-            // 角色移动
-            Debug.Log("角色移动: " + username + " " + position[0] + " " + position[1]);
+        void OnMove(MoveBroMessage msg) {
+            bool has = players.TryGetValue(msg.username, out RoleEntity role); // 获取角色对象
+            if (has) {
+                // 移动角色
+                Vector3 pos = new Vector3(msg.position[0], 0, msg.position[1]); // 设置角色位置
+                role.transform.position = pos; // 移动角色
+            } else {
+                Debug.Log("没有找到角色: " + msg.username);
+            }
+        }
+
+        void MoveSend(MoveReqMessage req) {
+            byte[] data = MessageHelper.ToData(req); // 消息头+消息体
+            client.Send(data); // 发送消息
         }
     }
 }
