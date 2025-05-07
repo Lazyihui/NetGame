@@ -12,6 +12,7 @@ namespace GameClient {
 
     // 客户端主类
     public class ClientMain : MonoBehaviour {
+        [SerializeField] public string username;
         Client client;
 
         bool isTearDown;
@@ -32,6 +33,16 @@ namespace GameClient {
 
             client.OnData += (message) => {
                 Debug.Log("收到消息: " + message.ToString());
+                int typeID = MessageHeper.ReadHeader(message.Array); // 读取消息头 这里后面应该是有错的
+                if(typeID == MessageConst.login_res) {
+                    // 登录响应消息
+                    // LoginResMessage msg = MessageHeper.ReadData<LoginResMessage>(message.Array); // 反序列化
+                    // Debug.Log("收到登录响应消息: " + msg.ToString()); // 消息内容
+                } else if (typeID == MessageConst.roleSpawn_bro) {
+                    // 角色出生广播消息
+                    RoleSpawnBroMessage msg = MessageHeper.ReadData<RoleSpawnBroMessage>(message.Array); // 反序列化
+                    OnSpawn(msg.username, msg.position); // 处理消息
+                } 
             };
 
             client.OnDisconnected += () => {
@@ -60,29 +71,36 @@ namespace GameClient {
                 // client.Send(date);
                 // Debug.Log("发送消息: " + a); // 消息内容
                 // 3.发送复杂数据 
-                LoginMessage msg = new LoginMessage(); // 创建消息对象
-                msg.username = "cyh";
+                LoginReqMessage msg = new LoginReqMessage(); // 创建消息对象
+                msg.username = username;
                 msg.password = "123";
                 // string str = msg.ToJson(); // 转换为Json字符串
                 // byte[] data = System.Text.Encoding.UTF8.GetBytes(str); // 转换为字节数组
                 // client.Send(data); // 发送消息
                 // Debug.Log("发送消息: " + str); // 消息内容
                 // 4.天际MessageHeper类发送消息
-                byte[] data = MessageHeper.ToData(1, msg); // 消息头+消息体
+                byte[] data = MessageHeper.ToData(msg); // 消息头+消息体
                 client.Send(data); // 发送消息
+                Debug.Log("发送消息: " + msg.ToJson()); // 消息内容
             }
 
-            if (Input.GetKeyUp(KeyCode.A)) {
+            if (Input.GetKeyUp(KeyCode.R)) {
                 // 发送角色出生消息
-                RoleSpawnMessage msg = new RoleSpawnMessage(); // 创建消息对象
-                msg.position = new float[2] { 1, 2 }; // 设置位置
-                // string str = msg.ToJson(); // 转换为Json字符串
-                // byte[] data = System.Text.Encoding.UTF8.GetBytes(str); // 转换为字节数组
+                // RoleSpawnReqMessage msg = new RoleSpawnReqMessage(); // 创建消息对象
+                // msg.position = new float[2] { 1, 2 }; // 设置位置
+                // // string str = msg.ToJson(); // 转换为Json字符串
+                // // byte[] data = System.Text.Encoding.UTF8.GetBytes(str); // 转换为字节数组
+                // // client.Send(data); // 发送消息
+                // // Debug.Log("发送角色出生消息: " + str); // 消息内容
+                // byte[] data = MessageHeper.ToData(msg); // 消息头+消息体
                 // client.Send(data); // 发送消息
-                // Debug.Log("发送角色出生消息: " + str); // 消息内容
-                byte[] data = MessageHeper.ToData(2, msg); // 消息头+消息体
+                // Debug.Log("发送角色出生消息: " + msg.ToJson()); // 消息内容
+                // 2.
+                RoleSpawnReqMessage msg = new RoleSpawnReqMessage(); // 创建消息对象
+                msg.username = username; // 设置用户名
+                msg.position = new float[2] { 1, 2 }; // 设置位置
+                byte[] data = MessageHeper.ToData(msg); // 消息头+消息体
                 client.Send(data); // 发送消息
-                Debug.Log("发送角色出生消息: " + msg.ToJson()); // 消息内容
             }
         }
 
@@ -97,6 +115,17 @@ namespace GameClient {
             if (client != null) {
                 client.Disconnect();
             }
+        }
+
+        // === Game Login ===
+        void OnSpawn(string username, float[] position) {
+            // 角色出生
+            Debug.Log("角色出生: " + username + " " + position[0] + " " + position[1]);
+        }
+
+        void MoveTo(string username, float[] position) {
+            // 角色移动
+            Debug.Log("角色移动: " + username + " " + position[0] + " " + position[1]);
         }
     }
 }

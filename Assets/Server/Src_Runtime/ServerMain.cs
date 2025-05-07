@@ -50,10 +50,14 @@ namespace GameServer {
                 // Debug.Log(" from " + connectionId + "收到的信息 " + msg.ToString()); // 消息内容
                 // 4.要先处理id在处理数据
                 int typeID = MessageHeper.ReadHeader(message.Array); // 读取消息头 这里后面应该是有错的
-                if (typeID == 1) {
+                if (typeID == MessageConst.login_req) {
                     // LoginMessage
-                } else if (typeID == 2) {
+                    LoginReqMessage msg = MessageHeper.ReadData<LoginReqMessage>(message.Array); // 反序列化
+                    Debug.Log(" from " + connectionId + "收到的信息 " + msg.ToString()); // 消息内容
+                } else if (typeID == MessageConst.roleSpawn_req) {
                     // ChatMessage
+                    RoleSpawnReqMessage msg = MessageHeper.ReadData<RoleSpawnReqMessage>(message.Array); // 反序列化
+                    OnSpawnRole(connectionId, msg); // 处理消息
                 }
             };
 
@@ -77,9 +81,9 @@ namespace GameServer {
 
                     // 发送消息
                     // 1.发送原始数据
-                    RoleSpawnMessage msg = new RoleSpawnMessage(); // 创建消息对象
+                    RoleSpawnReqMessage msg = new RoleSpawnReqMessage(); // 创建消息对象
                     msg.position = new float[2] { 1, 2 }; // 设置位置
-                    byte[] data = MessageHeper.ToData(2, msg); // 消息头+消息体
+                    byte[] data = MessageHeper.ToData(msg); // 消息头+消息体
                     server.Send(connID, data); // 发送消息
 
                 }
@@ -101,6 +105,33 @@ namespace GameServer {
             if (server != null) {
                 // 因为是子线程必需关闭
                 server.Stop();
+            }
+        }
+
+        // === Game Server ===
+        void OnSpawnRole(int connID, RoleSpawnReqMessage req) {
+            // 1.当有一位玩家请求出生角色时，给所有玩家广播
+
+            // 2.回传给本人
+
+            // 3.给所有人广播
+            for (int i = 0; i < client.Count; i++) {
+                int id = client[i];
+                // 获取连接ID
+                // if (id == connID) {
+                //     // 给本人回传
+                //     RoleSpawnResMessage res = new RoleSpawnResMessage(); // 创建消息对象
+                //     res.position = req.position; // 设置位置
+                //     byte[] data = MessageHeper.ToData(res); // 消息头+消息体
+                //     server.Send(id, data); // 发送消息
+                // } else {
+                // 广播给其他人
+                RoleSpawnBroMessage bro = new RoleSpawnBroMessage(); // 创建消息对象
+                bro.username = req.username; // 设置用户名
+                bro.position = req.position; // 设置位置
+                
+                byte[] data = MessageHeper.ToData(bro); // 消息头+消息体
+                server.Send(id, data); // 发送消息
             }
         }
     }
